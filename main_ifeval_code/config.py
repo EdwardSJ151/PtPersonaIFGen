@@ -22,52 +22,12 @@ VLLM_BASE_URL = os.environ.get("VLLM_BASE_URL", "http://localhost:8021/v1")
 VLLM_API_KEY = os.environ.get("VLLM_API_KEY", "no-key-needed")
 
 # -----------------------------------------------------------------------
-# CONFIGURAÇÃO DA FONTE DE TÓPICOS
+# CONFIGURAÇÃO DA FONTE DE PERSONAS
 # -----------------------------------------------------------------------
-# Toggle: "huggingface" ou "predefined"
-TOPIC_SOURCE = os.environ.get("TOPIC_SOURCE", "huggingface")
-
-# Configurações do dataset HuggingFace (quando TOPIC_SOURCE="huggingface")
-HF_DATASET_ID = os.environ.get("HF_DATASET_ID", "HuggingFaceFW/finewiki")
-HF_DATASET_SUBSET = os.environ.get("HF_DATASET_SUBSET", "pt")
-HF_TEXT_FIELD = os.environ.get("HF_TEXT_FIELD", "text")
-HF_TITLE_FIELD = os.environ.get("HF_TITLE_FIELD", "title")
-HF_MIN_CHARS = int(os.environ.get("HF_MIN_CHARS", "200"))
-HF_MAX_CONTEXT_CHARS = int(os.environ.get("HF_MAX_CONTEXT_CHARS", "1500000"))
-
-# Tópicos predefinidos (quando TOPIC_SOURCE="predefined")
-PREDEFINED_TOPICS = [
-    "culinária e receitas",
-    "viagens e turismo",
-    "ciência e tecnologia",
-    "história e cultura",
-    "saúde e fitness",
-    "negócios e finanças",
-    "educação e aprendizagem",
-    "artes e entretenimento",
-    "esportes e recreação",
-    "natureza e meio ambiente",
-    "filosofia e ética",
-    "psicologia e autodesenvolvimento",
-    "política e atualidades",
-    "literatura e escrita",
-    "música e artes cênicas",
-    "arquitetura e design",
-    "astronomia e espaço",
-    "matemática e lógica",
-    "linguística e idiomas",
-    "mitologia e folclore",
-    "direito e questões jurídicas",
-    "medicina e saúde",
-    "economia e mercados",
-    "sociologia e sociedade",
-    "engenharia e construção",
-    "agricultura e pecuária",
-    "moda e estilo",
-    "jogos e esports",
-    "fotografia e artes visuais",
-    "relacionamentos e namoro",
-]
+# Dataset de personas (Persona Hub - Chan et al., 2024)
+PERSONA_DATASET_ID = os.environ.get("PERSONA_DATASET_ID", "proj-persona/PersonaHub")
+PERSONA_DATASET_SUBSET = os.environ.get("PERSONA_DATASET_SUBSET", "persona")
+PERSONA_TEXT_FIELD = os.environ.get("PERSONA_TEXT_FIELD", "persona")
 
 # -----------------------------------------------------------------------
 # PARÂMETROS DE GERAÇÃO (de pipeline/pipeline.py)
@@ -167,36 +127,6 @@ IFEVAL_CONSTRAINT_PHRASINGS = """
 """.strip()
 
 
-USER_INSTRUCTION_GENERATOR_SYSTEM_PROMPT = f"""Você é um gerador de dados sintéticos. Sua tarefa é gerar instruções/consultas realistas de usuários que incluam restrições específicas de formatação ou conteúdo.
-
-As instruções de usuário que você gera devem soar naturais, como se uma pessoa real estivesse pedindo ajuda a um assistente de IA. Cada instrução DEVE incluir uma ou mais restrições usando as formulações EXATAS abaixo.
-
-## IMPORTANTE: Use Estas Formulações Exatas de Restrições
-
-{IFEVAL_CONSTRAINT_PHRASINGS}
-
-## Diretrizes
-
-- Gere instruções que sejam diversas em tópico e tipo de restrição
-- Faça as instruções soarem naturais e conversacionais
-- Inclua 1-3 restrições por instrução (não sobrecarregue)
-- Use as formulações EXATAS das restrições acima (substituindo placeholders como [num_palavras] por valores reais sem colchetes)
-- Varie quais restrições você usa em diferentes instruções
-
-## IMPORTANTE: Conflitos de Restrições
-
-Algumas restrições são mutuamente exclusivas e não podem ser aplicadas juntas. NÃO combine restrições conflitantes em uma única instrução:
-
-- Restrições de idioma podem conflitar com modificações de maiúsculas/minúsculas, frequências de palavras-chave e certos requisitos de formatação.
-- Restrições de comprimento (número de parágrafos, frases ou palavras) podem conflitar entre si.
-- Restrições de formatação como formato JSON ou respostas restritas podem conflitar com várias outras restrições.
-- Restrições de modificação de maiúsculas/minúsculas podem conflitar entre si (ex.: não combine "todas letras maiúsculas" com "todas letras minúsculas").
-
-## Formato de Saída
-
-Produza APENAS a instrução/consulta do usuário. Não inclua nenhuma explicação, metadados ou raciocínio.
-"""
-
 # -----------------------------------------------------------------------
 # RE-EXPORTAR PROMPTS E SCHEMAS
 # -----------------------------------------------------------------------
@@ -206,21 +136,15 @@ __all__ = [
     "IFEVAL_INSTRUCTION_ID_LIST_ASSIGNATOR_SYSTEM_PROMPT",
     "IFEVAL_KWARGS_ASSIGNATOR_SYSTEM_PROMPT",
     "IFEVAL_CONSTRAINT_PHRASINGS",
-    "USER_INSTRUCTION_GENERATOR_SYSTEM_PROMPT",
     # Schemas
     "IFEVAL_INSTRUCTION_ID_LIST_JSON_SCHEMA",
     "IFEVAL_RESPONSE_VERIFICATION_FUNCTION_ARGUMENTS_JSON_SCHEMA",
     # Config
     "VLLM_BASE_URL",
     "VLLM_API_KEY",
-    "TOPIC_SOURCE",
-    "HF_DATASET_ID",
-    "HF_DATASET_SUBSET",
-    "HF_TEXT_FIELD",
-    "HF_TITLE_FIELD",
-    "HF_MIN_CHARS",
-    "HF_MAX_CONTEXT_CHARS",
-    "PREDEFINED_TOPICS",
+    "PERSONA_DATASET_ID",
+    "PERSONA_DATASET_SUBSET",
+    "PERSONA_TEXT_FIELD",
     "PHASE1_INSTRUCTION_TEMPERATURE",
     "PHASE1_RESPONSE_TEMPERATURE",
     "PHASE1_TOP_P",
