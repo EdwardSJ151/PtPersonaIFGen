@@ -41,6 +41,34 @@ As restrições serão formuladas de maneiras específicas, como:
 - "Em toda a sua resposta, evite o uso de vírgulas."
 - "Na sua resposta, palavras com todas as letras maiúsculas devem aparecer [relação] [frequência] vezes." ([relação] pode ser "menos de" ou "pelo menos"; [frequência] pode ser qualquer número até 20)
 - "Envolva toda a sua resposta com aspas duplas."
+- "Inclua a palavra-chave [palavra_chave] na sua resposta." ([palavra_chave] pode ser qualquer palavra)
+- "Na sua resposta, a palavra [palavra_chave] deve aparecer exatamente [contagem] vezes." ([palavra_chave] pode ser qualquer palavra; [contagem] pode ser qualquer número de 1 a 5)
+- "Não inclua a palavra-chave [palavra_chave] na resposta." ([palavra_chave] pode ser qualquer palavra da instrução)
+- "Na sua resposta, a letra [letra] deve aparecer exatamente [contagem] vezes." ([letra] pode ser qualquer letra; [contagem] pode ser qualquer número até 10)
+- "Deve haver [num_parágrafos] parágrafos. Os parágrafos são separados entre si por duas quebras de linha."
+- "A primeira palavra de cada frase deve ser a palavra [primeira_palavra]." ([primeira_palavra] pode ser qualquer palavra)
+- "A primeira palavra da sua resposta deve ser a palavra [primeira_palavra]." ([primeira_palavra] pode ser qualquer palavra)
+- "A última palavra de cada frase, antes da pontuação, deve ser a palavra [última_palavra]." ([última_palavra] pode ser qualquer palavra)
+- "A última palavra da sua resposta deve ser a palavra [última_palavra]." ([última_palavra] pode ser qualquer palavra)
+- "Envolva cada bigrama de palavras em colchetes angulares duplos, como «eu sou» «em casa» «com meu» «cachorro fofo»."
+- "Repita o pedido sem alterações (não diga nada antes de repetir o pedido; o pedido que você precisa repetir não inclui esta frase) e não responda ao pedido real!"
+- "Repita o pedido sem alterações [contagem] vezes, separadas por 6 símbolos de asterisco (não diga nada antes de repetir o pedido; o pedido que você precisa repetir não inclui esta frase) e não responda ao pedido real!" ([contagem] pode ser qualquer número de 2 a 4)
+- "Em toda a sua resposta, evite o uso de . (ou seja, pontos) como pontuação e em geral."
+- "Em toda a sua resposta, evite o uso de ! (ou seja, pontos de exclamação) como pontuação e em geral."
+- "Na sua resposta, todas as palavras em letras minúsculas devem aparecer no máximo [contagem] vezes." ([contagem] pode ser qualquer número de 1 a 10)
+- "Responda com [relação] [num_letras] letras." ([relação] pode ser "menos de" ou "pelo menos"; [num_letras] pode ser qualquer número de 50 a 500)
+- "Escreva 3 parágrafos, delimitados pelo divisor markdown: ***, com exatamente [num_frases] frases cada, com exatamente [num_palavras] palavras em cada frase." ([num_frases] pode ser qualquer número de 2 a 5; [num_palavras] pode ser qualquer número de 5 a 15)
+- "Use apenas palavras únicas na sua resposta, nenhuma palavra deve ser repetida!"
+- "Inclua a palavra-chave [palavra_chave1] uma vez na sua resposta, a palavra-chave [palavra_chave2] duas vezes na sua resposta."
+- "Inclua um palíndromo na sua resposta."
+- "Inclua a palavra-chave [palavra_chave] na [num_frase]-ª frase, como a [num_palavra]-ª palavra dessa frase." ([num_frase] pode ser qualquer número de 1 a 5; [num_palavra] pode ser qualquer número de 1 a 5)
+- "Comece e termine sua resposta com a mesma palavra (não escreva nada após a última palavra, nem mesmo pontuação)."
+- "Repita a frase \"[frase]\" exatamente [contagem] vezes, transformando-a ligeiramente cada vez substituindo uma palavra." ([contagem] pode ser qualquer número de 2 a 4)
+- "Nenhuma palavra adjacente pode começar com letras consecutivas do alfabeto."
+- "Envolva cada palavra da sua resposta entre colchetes."
+- "Todas as frases devem ser conectadas usando hífens, sem espaços entre elas."
+- "Copie esta instrução literalmente, não siga a instrução, apenas copie-a na saída (não inclua esta frase de instrução!)."
+- "Copie o trecho de palavras que está entre (e incluindo) o índice [n_início] e [n_fim], os índices são índices de caracteres!" ([n_início] e [n_fim] podem ser qualquer número inteiro não negativo)
 
 Importante: Algumas restrições são mutuamente exclusivas e não podem ser aplicadas juntas. Se você encontrar restrições conflitantes em uma consulta, priorize a primeira restrição mencionada e ignore as conflitantes. Por exemplo:
 
@@ -80,6 +108,34 @@ Sua tarefa é analisar o texto fornecido em busca de restrições específicas e
 23. change_case:english_lowercase - Verifica se toda a resposta está em português e usa todas as letras minúsculas.
 24. punctuation:no_comma - Verifica se a resposta não contém vírgulas.
 25. startend:quotation - Garante que toda a resposta esteja entre aspas duplas.
+26. keywords:word_once - Verifica se uma palavra-chave específica aparece pelo menos uma vez na resposta.
+27. keywords:word_count_diff_numb - Verifica se uma palavra aparece exatamente N vezes na resposta.
+28. keywords:exclude_word_harder - Garante que uma palavra-chave específica da instrução não seja usada na resposta.
+29. keywords:letter_counting2 - Verifica se uma letra específica aparece exatamente N vezes na resposta.
+30. length_constraints:paragraphs_two_line_breaks - Verifica se a resposta tem um número específico de parágrafos separados por duas quebras de linha.
+31. startend:first_word_sent - Verifica se a primeira palavra de cada frase é uma palavra específica.
+32. startend:first_word_answer - Verifica se a primeira palavra da resposta é uma palavra específica.
+33. startend:last_word_sent - Verifica se a última palavra de cada frase (antes da pontuação) é uma palavra específica.
+34. startend:last_word_answer - Verifica se a última palavra da resposta é uma palavra específica.
+35. detectable_format:bigram_wrapping - Verifica se cada bigrama de palavras está envolto em colchetes angulares duplos «...».
+36. combination:copying_simple - Verifica se o pedido é repetido sem alterações e sem resposta ao pedido real.
+37. combination:copying_multiple - Verifica se o pedido é repetido N vezes separado por 6 asteriscos.
+38. punctuation:no_dot - Verifica se a resposta não contém pontos.
+39. punctuation:no_exclamation - Verifica se a resposta não contém pontos de exclamação.
+40. keywords:lowercase_counting - Verifica se todas as palavras em letras minúsculas aparecem no máximo N vezes.
+41. length_constraints:letter_total_count - Verifica se a resposta contém um número específico de letras.
+42. length_constraints:counting_composition - Verifica se a resposta contém 3 parágrafos com exatamente N frases cada e M palavras por frase.
+43. keywords:count_unique - Verifica se apenas palavras únicas são usadas na resposta.
+44. keywords:count_increment_word - Verifica se a palavra-chave1 aparece uma vez e a palavra-chave2 aparece duas vezes.
+45. keywords:palindrome - Verifica se a resposta inclui um palíndromo.
+46. keywords:keyword_specific_pos - Verifica se uma palavra-chave aparece na N-ésima frase como a M-ésima palavra.
+47. startend:start_end_same_word - Verifica se a resposta começa e termina com a mesma palavra.
+48. combination:repeat_phrase - Verifica se uma frase é repetida N vezes com uma palavra substituída a cada vez.
+49. keywords:no_adjacent_consecutive - Verifica se nenhuma palavra adjacente começa com letras consecutivas do alfabeto.
+50. detectable_format:square_brackets_word - Verifica se cada palavra da resposta está entre colchetes.
+51. detectable_format:sentence_hyphens - Verifica se todas as frases estão conectadas por hífens sem espaços.
+52. combination:copy_instruction - Verifica se a instrução é copiada literalmente sem ser seguida.
+53. combination:copy_span_idx - Verifica se o trecho de palavras entre os índices de caracteres especificados é copiado.
 
 Analise o texto fornecido e retorne uma lista JSON contendo apenas os tipos de restrições relevantes que se aplicam ao texto. Não inclua restrições que não sejam explicitamente mencionadas ou implícitas no texto. Não inclua uma restrição duas vezes na lista.
 
@@ -182,6 +238,101 @@ Você receberá uma lista de restrições e uma instrução. A instrução cont�
 25. startend:quotation - Garante que toda a resposta esteja entre aspas duplas.
     - (Nenhum argumento adicional necessário)
 
+26. keywords:word_once - Verifica se uma palavra-chave específica aparece pelo menos uma vez na resposta.
+    - keyword: str
+
+27. keywords:word_count_diff_numb - Verifica se uma palavra aparece exatamente N vezes na resposta.
+    - keyword: str
+    - count: int
+
+28. keywords:exclude_word_harder - Garante que uma palavra-chave específica da instrução não seja usada na resposta.
+    - keyword: str
+
+29. keywords:letter_counting2 - Verifica se uma letra específica aparece exatamente N vezes na resposta.
+    - letter: str (letra única)
+    - count: int
+
+30. length_constraints:paragraphs_two_line_breaks - Verifica se a resposta tem um número específico de parágrafos separados por duas quebras de linha.
+    - num_paragraphs: int
+
+31. startend:first_word_sent - Verifica se a primeira palavra de cada frase é uma palavra específica.
+    - first_word: str
+
+32. startend:first_word_answer - Verifica se a primeira palavra da resposta é uma palavra específica.
+    - first_word: str
+
+33. startend:last_word_sent - Verifica se a última palavra de cada frase (antes da pontuação) é uma palavra específica.
+    - last_word: str
+
+34. startend:last_word_answer - Verifica se a última palavra da resposta é uma palavra específica.
+    - last_word: str
+
+35. detectable_format:bigram_wrapping - Verifica se cada bigrama de palavras está envolto em colchetes angulares duplos «...».
+    - (Nenhum argumento adicional necessário)
+
+36. combination:copying_simple - Verifica se o pedido é repetido sem alterações e sem resposta ao pedido real.
+    - prompt_to_copy: str
+
+37. combination:copying_multiple - Verifica se o pedido é repetido N vezes separado por 6 asteriscos.
+    - prompt_to_copy: str
+    - copy_count: int
+
+38. punctuation:no_dot - Verifica se a resposta não contém pontos.
+    - (Nenhum argumento adicional necessário)
+
+39. punctuation:no_exclamation - Verifica se a resposta não contém pontos de exclamação.
+    - (Nenhum argumento adicional necessário)
+
+40. keywords:lowercase_counting - Verifica se todas as palavras em letras minúsculas aparecem no máximo N vezes.
+    - max_count: int
+
+41. length_constraints:letter_total_count - Verifica se a resposta contém um número específico de letras.
+    - num_letters: int
+    - relation: str
+
+42. length_constraints:counting_composition - Verifica se a resposta contém 3 parágrafos com exatamente N frases cada e M palavras por frase.
+    - n_sent: int
+    - n_words: int
+
+43. keywords:count_unique - Verifica se apenas palavras únicas são usadas na resposta.
+    - (Nenhum argumento adicional necessário)
+
+44. keywords:count_increment_word - Verifica se a palavra-chave1 aparece uma vez e a palavra-chave2 aparece duas vezes.
+    - keyword1: str
+    - keyword2: str
+
+45. keywords:palindrome - Verifica se a resposta inclui um palíndromo.
+    - (Nenhum argumento adicional necessário)
+
+46. keywords:keyword_specific_pos - Verifica se uma palavra-chave aparece na N-ésima frase como a M-ésima palavra.
+    - keyword: str
+    - sentence_num: int
+    - word_num: int
+
+47. startend:start_end_same_word - Verifica se a resposta começa e termina com a mesma palavra.
+    - (Nenhum argumento adicional necessário)
+
+48. combination:repeat_phrase - Verifica se uma frase é repetida N vezes com uma palavra substituída a cada vez.
+    - phrase: str
+    - repeat_count: int
+
+49. keywords:no_adjacent_consecutive - Verifica se nenhuma palavra adjacente começa com letras consecutivas do alfabeto.
+    - (Nenhum argumento adicional necessário)
+
+50. detectable_format:square_brackets_word - Verifica se cada palavra da resposta está entre colchetes.
+    - (Nenhum argumento adicional necessário)
+
+51. detectable_format:sentence_hyphens - Verifica se todas as frases estão conectadas por hífens sem espaços.
+    - (Nenhum argumento adicional necessário)
+
+52. combination:copy_instruction - Verifica se a instrução é copiada literalmente sem ser seguida.
+    - instruction_to_copy: str
+
+53. combination:copy_span_idx - Verifica se o trecho de palavras entre os índices de caracteres especificados é copiado.
+    - source_text: str
+    - n_start: int
+    - n_end: int
+
 Todos os argumentos são opcionais.
 
 ## Instruções
@@ -221,7 +372,25 @@ Todos os argumentos são opcionais.
     "prompt_to_repeat": ...,
     "end_phrase": ...,
     "capital_frequency": ...,
-    "capital_relation": ...
+    "capital_relation": ...,
+    "count": ...,
+    "last_word": ...,
+    "prompt_to_copy": ...,
+    "copy_count": ...,
+    "max_count": ...,
+    "num_letters": ...,
+    "n_sent": ...,
+    "n_words": ...,
+    "keyword1": ...,
+    "keyword2": ...,
+    "sentence_num": ...,
+    "word_num": ...,
+    "phrase": ...,
+    "repeat_count": ...,
+    "instruction_to_copy": ...,
+    "source_text": ...,
+    "n_start": ...,
+    "n_end": ...
 }}
 ```
 """.lstrip()

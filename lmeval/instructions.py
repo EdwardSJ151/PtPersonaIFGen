@@ -1610,3 +1610,804 @@ class QuotationChecker(Instruction):
         """Checks if the response is wrapped with double quotation marks."""
         value = value.strip()
         return len(value) > 1 and value[0] == '"' and value[-1] == '"'
+
+
+# ---------------------------------------------------------------------------
+# NEW IFTrain out-of-distribution constraints
+# ---------------------------------------------------------------------------
+
+class KeywordOnceChecker(Instruction):
+    """Check that a keyword appears at least once in the response."""
+
+    def build_description(self, *, keyword=None):
+        if not keyword:
+            self._keyword = instructions_util.generate_keywords(num_keywords=1)[0]
+        else:
+            self._keyword = keyword.strip()
+        self._description_pattern = (
+            "Include keyword {keyword} in your response."
+        )
+        return self._description_pattern.format(keyword=self._keyword)
+
+    def get_instruction_args(self):
+        return {"keyword": self._keyword}
+
+    def get_instruction_args_keys(self):
+        return ["keyword"]
+
+    def check_following(self, value):
+        return bool(re.search(r"\b" + re.escape(self._keyword) + r"\b", value, flags=re.IGNORECASE))
+
+
+class KeywordExactCountChecker(Instruction):
+    """Check that a word appears exactly N times in the response."""
+
+    def build_description(self, *, keyword=None, count=None):
+        if not keyword:
+            self._keyword = instructions_util.generate_keywords(num_keywords=1)[0]
+        else:
+            self._keyword = keyword.strip()
+        self._count = count
+        if self._count is None or self._count < 1:
+            self._count = random.randint(1, 5)
+        self._description_pattern = (
+            "In your response, the word {keyword} should appear {count} times."
+        )
+        return self._description_pattern.format(keyword=self._keyword, count=self._count)
+
+    def get_instruction_args(self):
+        return {"keyword": self._keyword, "count": self._count}
+
+    def get_instruction_args_keys(self):
+        return ["keyword", "count"]
+
+    def check_following(self, value):
+        occurrences = len(re.findall(r"\b" + re.escape(self._keyword) + r"\b", value, flags=re.IGNORECASE))
+        return occurrences == self._count
+
+
+class ExcludeWordHarderChecker(Instruction):
+    """Check that a specific keyword from the instruction is not used."""
+
+    def build_description(self, *, keyword=None):
+        if not keyword:
+            self._keyword = instructions_util.generate_keywords(num_keywords=1)[0]
+        else:
+            self._keyword = keyword.strip()
+        self._description_pattern = (
+            "Do not include keyword {keyword} in the response."
+        )
+        return self._description_pattern.format(keyword=self._keyword)
+
+    def get_instruction_args(self):
+        return {"keyword": self._keyword}
+
+    def get_instruction_args_keys(self):
+        return ["keyword"]
+
+    def check_following(self, value):
+        return not bool(re.search(r"\b" + re.escape(self._keyword) + r"\b", value, flags=re.IGNORECASE))
+
+
+class LetterExactCountChecker(Instruction):
+    """Check that a specific letter appears exactly N times in the response."""
+
+    def build_description(self, *, letter=None, count=None):
+        if (
+            not letter
+            or len(letter) > 1
+            or ord(letter.lower()) < 97
+            or ord(letter.lower()) > 122
+        ):
+            self._letter = random.choice(list(string.ascii_lowercase))
+        else:
+            self._letter = letter.strip().lower()
+        self._count = count
+        if self._count is None or self._count < 1:
+            self._count = random.randint(1, _LETTER_FREQUENCY)
+        self._description_pattern = (
+            "In your response, the letter {letter} should appear {count} times."
+        )
+        return self._description_pattern.format(letter=self._letter, count=self._count)
+
+    def get_instruction_args(self):
+        return {"letter": self._letter, "count": self._count}
+
+    def get_instruction_args_keys(self):
+        return ["letter", "count"]
+
+    def check_following(self, value):
+        value = value.lower()
+        letters = collections.Counter(value)
+        return letters[self._letter] == self._count
+
+
+class ParagraphsTwoLineBreaksChecker(Instruction):
+    """Check paragraphs separated by two line breaks (\\n\\n)."""
+
+    def build_description(self, *, num_paragraphs=None):
+        self._num_paragraphs = num_paragraphs
+        if self._num_paragraphs is None or self._num_paragraphs < 1:
+            self._num_paragraphs = random.randint(2, _NUM_PARAGRAPHS)
+        self._description_pattern = (
+            "There should be {num_paragraphs} paragraphs. "
+            "Paragraphs and only paragraphs are separated with each other by two line breaks."
+        )
+        return self._description_pattern.format(num_paragraphs=self._num_paragraphs)
+
+    def get_instruction_args(self):
+        return {"num_paragraphs": self._num_paragraphs}
+
+    def get_instruction_args_keys(self):
+        return ["num_paragraphs"]
+
+    def check_following(self, value):
+        paragraphs = re.split(r"\n\n", value)
+        num_paragraphs = len([p for p in paragraphs if p.strip()])
+        return num_paragraphs == self._num_paragraphs
+
+
+class FirstWordSentenceChecker(Instruction):
+    """Check that the first word of each sentence is a specific word."""
+
+    def build_description(self, *, first_word=None):
+        if not first_word:
+            self._first_word = instructions_util.generate_keywords(num_keywords=1)[0]
+        else:
+            self._first_word = first_word.strip().lower()
+        self._description_pattern = (
+            "The first word of each sentence should be the word {first_word}."
+        )
+        return self._description_pattern.format(first_word=self._first_word)
+
+    def get_instruction_args(self):
+        return {"first_word": self._first_word}
+
+    def get_instruction_args_keys(self):
+        return ["first_word"]
+
+    def check_following(self, value):
+        sentences = instructions_util.split_into_sentences(value)
+        if not sentences:
+            return False
+        for sentence in sentences:
+            sentence = sentence.strip()
+            if not sentence:
+                continue
+            words = re.findall(r"\w+", sentence)
+            if not words:
+                return False
+            if words[0].lower() != self._first_word.lower():
+                return False
+        return True
+
+
+class FirstWordAnswerChecker(Instruction):
+    """Check that the first word of the entire response is a specific word."""
+
+    def build_description(self, *, first_word=None):
+        if not first_word:
+            self._first_word = instructions_util.generate_keywords(num_keywords=1)[0]
+        else:
+            self._first_word = first_word.strip().lower()
+        self._description_pattern = (
+            "The first word of your response should be the word {first_word}."
+        )
+        return self._description_pattern.format(first_word=self._first_word)
+
+    def get_instruction_args(self):
+        return {"first_word": self._first_word}
+
+    def get_instruction_args_keys(self):
+        return ["first_word"]
+
+    def check_following(self, value):
+        value = value.strip()
+        words = re.findall(r"\w+", value)
+        if not words:
+            return False
+        return words[0].lower() == self._first_word.lower()
+
+
+class LastWordSentenceChecker(Instruction):
+    """Check that the last word of each sentence (before punctuation) is a specific word."""
+
+    def build_description(self, *, last_word=None):
+        if not last_word:
+            self._last_word = instructions_util.generate_keywords(num_keywords=1)[0]
+        else:
+            self._last_word = last_word.strip().lower()
+        self._description_pattern = (
+            "The last word of each sentence, before punctuation, should be the word {last_word}."
+        )
+        return self._description_pattern.format(last_word=self._last_word)
+
+    def get_instruction_args(self):
+        return {"last_word": self._last_word}
+
+    def get_instruction_args_keys(self):
+        return ["last_word"]
+
+    def check_following(self, value):
+        sentences = instructions_util.split_into_sentences(value)
+        if not sentences:
+            return False
+        for sentence in sentences:
+            sentence = sentence.strip()
+            if not sentence:
+                continue
+            words = re.findall(r"\w+", sentence)
+            if not words:
+                return False
+            if words[-1].lower() != self._last_word.lower():
+                return False
+        return True
+
+
+class LastWordAnswerChecker(Instruction):
+    """Check that the last word of the entire response is a specific word."""
+
+    def build_description(self, *, last_word=None):
+        if not last_word:
+            self._last_word = instructions_util.generate_keywords(num_keywords=1)[0]
+        else:
+            self._last_word = last_word.strip().lower()
+        self._description_pattern = (
+            "The last word of your response should be the word {last_word}."
+        )
+        return self._description_pattern.format(last_word=self._last_word)
+
+    def get_instruction_args(self):
+        return {"last_word": self._last_word}
+
+    def get_instruction_args_keys(self):
+        return ["last_word"]
+
+    def check_following(self, value):
+        value = value.strip()
+        # Remove trailing punctuation to get the last word
+        words = re.findall(r"\w+", value)
+        if not words:
+            return False
+        return words[-1].lower() == self._last_word.lower()
+
+
+class BigramWrappingChecker(Instruction):
+    """Check that every word bigram is wrapped in double angular brackets «...»."""
+
+    def build_description(self):
+        self._description_pattern = (
+            "Wrap every word bigram in double angular brackets, "
+            "such as \u00abI am\u00bb \u00abat home\u00bb \u00abwith my\u00bb \u00abcute dog\u00bb."
+        )
+        return self._description_pattern
+
+    def get_instruction_args(self):
+        return None
+
+    def get_instruction_args_keys(self):
+        return []
+
+    def check_following(self, value):
+        """Check that the response contains bigrams wrapped in «...»."""
+        # Find all bigrams wrapped in «...»
+        wrapped_bigrams = re.findall(r"\u00ab[^\u00ab\u00bb]+\u00bb", value)
+        if not wrapped_bigrams:
+            return False
+        # Each wrapped bigram should contain exactly 2 words
+        for bigram in wrapped_bigrams:
+            content = bigram.strip("\u00ab\u00bb").strip()
+            words = content.split()
+            if len(words) != 2:
+                return False
+        return True
+
+
+class CopyingSimpleChecker(Instruction):
+    """Check that the request is repeated without change and not answered."""
+
+    def build_description(self, *, prompt_to_copy=None):
+        if not prompt_to_copy:
+            raise ValueError("prompt_to_copy must be set.")
+        self._prompt_to_copy = prompt_to_copy
+        self._description_pattern = (
+            "Repeat the request without change (do not say anything before repeating "
+            "the request; the request you need to repeat does not include this sentence) "
+            "and do not answer the actual request!"
+        )
+        return self._description_pattern
+
+    def get_instruction_args(self):
+        return {"prompt_to_copy": self._prompt_to_copy}
+
+    def get_instruction_args_keys(self):
+        return ["prompt_to_copy"]
+
+    def check_following(self, value):
+        value = value.strip()
+        prompt = self._prompt_to_copy.strip()
+        return value.lower() == prompt.lower()
+
+
+class CopyingMultipleChecker(Instruction):
+    """Check that the request is repeated N times separated by 6 asterisks."""
+
+    def build_description(self, *, prompt_to_copy=None, copy_count=None):
+        if not prompt_to_copy:
+            raise ValueError("prompt_to_copy must be set.")
+        self._prompt_to_copy = prompt_to_copy
+        self._copy_count = copy_count
+        if self._copy_count is None or self._copy_count < 1:
+            self._copy_count = random.randint(2, 4)
+        self._description_pattern = (
+            "Repeat the request without change {copy_count} times, separated by 6 asterisk symbols "
+            "(do not say anything before repeating the request; the request you need to repeat "
+            "does not include this sentence) and do not answer the actual request!"
+        )
+        return self._description_pattern.format(copy_count=self._copy_count)
+
+    def get_instruction_args(self):
+        return {"prompt_to_copy": self._prompt_to_copy, "copy_count": self._copy_count}
+
+    def get_instruction_args_keys(self):
+        return ["prompt_to_copy", "copy_count"]
+
+    def check_following(self, value):
+        parts = value.split("******")
+        valid_parts = [p.strip() for p in parts if p.strip()]
+        if len(valid_parts) != self._copy_count:
+            return False
+        prompt = self._prompt_to_copy.strip().lower()
+        return all(p.lower() == prompt for p in valid_parts)
+
+
+class NoDotChecker(Instruction):
+    """Check that the response does not contain dots."""
+
+    def build_description(self):
+        self._description_pattern = (
+            "In your entire response, refrain from the use of . (i.e. dots) as punctuation and in general."
+        )
+        return self._description_pattern
+
+    def get_instruction_args(self):
+        return None
+
+    def get_instruction_args_keys(self):
+        return []
+
+    def check_following(self, value):
+        return "." not in value
+
+
+class NoExclamationChecker(Instruction):
+    """Check that the response does not contain exclamation marks."""
+
+    def build_description(self):
+        self._description_pattern = (
+            "In your entire response, refrain from the use of ! (i.e. exclamation marks) as punctuation and in general."
+        )
+        return self._description_pattern
+
+    def get_instruction_args(self):
+        return None
+
+    def get_instruction_args_keys(self):
+        return []
+
+    def check_following(self, value):
+        return "!" not in value
+
+
+class LowercaseWordCountChecker(Instruction):
+    """Check that all lowercase words appear at most N times."""
+
+    def build_description(self, *, max_count=None):
+        self._max_count = max_count
+        if self._max_count is None or self._max_count < 1:
+            self._max_count = random.randint(1, 10)
+        self._description_pattern = (
+            "In your response, all lowercase words should appear at most {max_count} times."
+        )
+        return self._description_pattern.format(max_count=self._max_count)
+
+    def get_instruction_args(self):
+        return {"max_count": self._max_count}
+
+    def get_instruction_args_keys(self):
+        return ["max_count"]
+
+    def check_following(self, value):
+        words = re.findall(r"\b[a-z]+\b", value)
+        word_counts = collections.Counter(words)
+        return all(count <= self._max_count for count in word_counts.values())
+
+
+class LetterTotalCountChecker(Instruction):
+    """Check that the response contains exactly N letters (or with relation)."""
+
+    def build_description(self, *, num_letters=None, relation=None):
+        self._num_letters = num_letters
+        if self._num_letters is None or self._num_letters < 1:
+            self._num_letters = random.randint(50, 500)
+        if relation is None:
+            self._relation = random.choice(_COMPARISON_RELATION)
+        elif relation not in _COMPARISON_RELATION:
+            raise ValueError(
+                f"The supported relation must be in {_COMPARISON_RELATION}, but {relation} is given."
+            )
+        else:
+            self._relation = relation
+        self._description_pattern = (
+            "Answer with {relation} {num_letters} letters."
+        )
+        return self._description_pattern.format(relation=self._relation, num_letters=self._num_letters)
+
+    def get_instruction_args(self):
+        return {"num_letters": self._num_letters, "relation": self._relation}
+
+    def get_instruction_args_keys(self):
+        return ["num_letters", "relation"]
+
+    def check_following(self, value):
+        letter_count = sum(1 for c in value if c.isalpha())
+        if self._relation == _COMPARISON_RELATION[0]:
+            return letter_count < self._num_letters
+        else:
+            return letter_count >= self._num_letters
+
+
+class CountingCompositionChecker(Instruction):
+    """Check 3 paragraphs with exactly N sentences each and M words per sentence."""
+
+    def build_description(self, *, n_sent=None, n_words=None):
+        self._n_sent = n_sent
+        if self._n_sent is None or self._n_sent < 1:
+            self._n_sent = random.randint(2, 5)
+        self._n_words = n_words
+        if self._n_words is None or self._n_words < 1:
+            self._n_words = random.randint(5, 15)
+        self._description_pattern = (
+            "Write 3 paragraphs, delimited by the markdown divider: ***, "
+            "with exactly {n_sent} sentences each, with exactly {n_words} words in each sentence."
+        )
+        return self._description_pattern.format(n_sent=self._n_sent, n_words=self._n_words)
+
+    def get_instruction_args(self):
+        return {"n_sent": self._n_sent, "n_words": self._n_words}
+
+    def get_instruction_args_keys(self):
+        return ["n_sent", "n_words"]
+
+    def check_following(self, value):
+        paragraphs = re.split(r"\s?\*\*\*\s?", value)
+        paragraphs = [p.strip() for p in paragraphs if p.strip()]
+        if len(paragraphs) != 3:
+            return False
+        for paragraph in paragraphs:
+            sentences = instructions_util.split_into_sentences(paragraph)
+            sentences = [s for s in sentences if s.strip()]
+            if len(sentences) != self._n_sent:
+                return False
+            for sentence in sentences:
+                word_count = instructions_util.count_words(sentence)
+                if word_count != self._n_words:
+                    return False
+        return True
+
+
+class UniqueWordsChecker(Instruction):
+    """Check that only unique words are used (no word repeated)."""
+
+    def build_description(self):
+        self._description_pattern = (
+            "Only use unique words in your response, no word should be repeated!"
+        )
+        return self._description_pattern
+
+    def get_instruction_args(self):
+        return None
+
+    def get_instruction_args_keys(self):
+        return []
+
+    def check_following(self, value):
+        words = re.findall(r"\b\w+\b", value.lower())
+        return len(words) == len(set(words))
+
+
+class IncrementKeywordChecker(Instruction):
+    """Check that keyword1 appears once and keyword2 appears twice."""
+
+    def build_description(self, *, keyword1=None, keyword2=None):
+        if not keyword1 or not keyword2:
+            kws = instructions_util.generate_keywords(num_keywords=2)
+            self._keyword1 = keyword1.strip() if keyword1 else kws[0]
+            self._keyword2 = keyword2.strip() if keyword2 else kws[1]
+        else:
+            self._keyword1 = keyword1.strip()
+            self._keyword2 = keyword2.strip()
+        self._description_pattern = (
+            "Include keyword {keyword1} once in your response, keyword {keyword2} twice in your response."
+        )
+        return self._description_pattern.format(keyword1=self._keyword1, keyword2=self._keyword2)
+
+    def get_instruction_args(self):
+        return {"keyword1": self._keyword1, "keyword2": self._keyword2}
+
+    def get_instruction_args_keys(self):
+        return ["keyword1", "keyword2"]
+
+    def check_following(self, value):
+        count1 = len(re.findall(r"\b" + re.escape(self._keyword1) + r"\b", value, flags=re.IGNORECASE))
+        count2 = len(re.findall(r"\b" + re.escape(self._keyword2) + r"\b", value, flags=re.IGNORECASE))
+        return count1 == 1 and count2 == 2
+
+
+class PalindromeChecker(Instruction):
+    """Check that the response includes a palindrome."""
+
+    def build_description(self):
+        self._description_pattern = "Include a palindrome in your response."
+        return self._description_pattern
+
+    def get_instruction_args(self):
+        return None
+
+    def get_instruction_args_keys(self):
+        return []
+
+    def check_following(self, value):
+        words = re.findall(r"\b\w+\b", value.lower())
+        for word in words:
+            if len(word) > 1 and word == word[::-1]:
+                return True
+        return False
+
+
+class KeywordSpecificPositionChecker(Instruction):
+    """Check that a keyword appears in the Nth sentence as the Mth word."""
+
+    def build_description(self, *, keyword=None, sentence_num=None, word_num=None):
+        if not keyword:
+            self._keyword = instructions_util.generate_keywords(num_keywords=1)[0]
+        else:
+            self._keyword = keyword.strip()
+        self._sentence_num = sentence_num
+        if self._sentence_num is None or self._sentence_num < 1:
+            self._sentence_num = random.randint(1, 5)
+        self._word_num = word_num
+        if self._word_num is None or self._word_num < 1:
+            self._word_num = random.randint(1, 5)
+        self._description_pattern = (
+            "Include keyword {keyword} in the {sentence_num}-th sentence, "
+            "as the {word_num}-th word of that sentence."
+        )
+        return self._description_pattern.format(
+            keyword=self._keyword,
+            sentence_num=self._sentence_num,
+            word_num=self._word_num,
+        )
+
+    def get_instruction_args(self):
+        return {
+            "keyword": self._keyword,
+            "sentence_num": self._sentence_num,
+            "word_num": self._word_num,
+        }
+
+    def get_instruction_args_keys(self):
+        return ["keyword", "sentence_num", "word_num"]
+
+    def check_following(self, value):
+        sentences = instructions_util.split_into_sentences(value)
+        sentences = [s for s in sentences if s.strip()]
+        if len(sentences) < self._sentence_num:
+            return False
+        target_sentence = sentences[self._sentence_num - 1]
+        words = re.findall(r"\w+", target_sentence)
+        if len(words) < self._word_num:
+            return False
+        return words[self._word_num - 1].lower() == self._keyword.lower()
+
+
+class StartEndSameWordChecker(Instruction):
+    """Check that the response starts and ends with the same word."""
+
+    def build_description(self):
+        self._description_pattern = (
+            "Start and end your response with the same word "
+            "(do not write anything after the last word, not even punctuation)."
+        )
+        return self._description_pattern
+
+    def get_instruction_args(self):
+        return None
+
+    def get_instruction_args_keys(self):
+        return []
+
+    def check_following(self, value):
+        value = value.strip()
+        words = re.findall(r"\w+", value)
+        if len(words) < 2:
+            return False
+        return words[0].lower() == words[-1].lower()
+
+
+class RepeatPhraseChecker(Instruction):
+    """Check that a phrase is repeated N times with one word replaced each time."""
+
+    def build_description(self, *, phrase=None, repeat_count=None):
+        if not phrase:
+            kws = instructions_util.generate_keywords(num_keywords=3)
+            self._phrase = " ".join(kws)
+        else:
+            self._phrase = phrase.strip()
+        self._repeat_count = repeat_count
+        if self._repeat_count is None or self._repeat_count < 2:
+            self._repeat_count = random.randint(2, 4)
+        self._description_pattern = (
+            "Repeat the phrase \"{phrase}\" exactly {repeat_count} times, "
+            "transforming it slightly each time by replacing one word."
+        )
+        return self._description_pattern.format(phrase=self._phrase, repeat_count=self._repeat_count)
+
+    def get_instruction_args(self):
+        return {"phrase": self._phrase, "repeat_count": self._repeat_count}
+
+    def get_instruction_args_keys(self):
+        return ["phrase", "repeat_count"]
+
+    def check_following(self, value):
+        """Check that the phrase (with one word replaced) appears repeat_count times."""
+        phrase_words = self._phrase.lower().split()
+        n = len(phrase_words)
+        if n == 0:
+            return False
+        # Find all n-grams in the response
+        value_words = re.findall(r"\w+", value.lower())
+        count = 0
+        for i in range(len(value_words) - n + 1):
+            ngram = value_words[i:i + n]
+            # Count differences
+            diffs = sum(1 for a, b in zip(ngram, phrase_words) if a != b)
+            if diffs <= 1:
+                count += 1
+        return count == self._repeat_count
+
+
+class NoAdjacentConsecutiveLettersChecker(Instruction):
+    """Check that no two adjacent words start with consecutive letters of the alphabet."""
+
+    def build_description(self):
+        self._description_pattern = (
+            "No two adjacent words can start with consecutive letters of the alphabet."
+        )
+        return self._description_pattern
+
+    def get_instruction_args(self):
+        return None
+
+    def get_instruction_args_keys(self):
+        return []
+
+    def check_following(self, value):
+        words = re.findall(r"\b[a-zA-Z]\w*\b", value)
+        for i in range(len(words) - 1):
+            c1 = words[i][0].lower()
+            c2 = words[i + 1][0].lower()
+            if abs(ord(c1) - ord(c2)) == 1:
+                return False
+        return True
+
+
+class SquareBracketsWordChecker(Instruction):
+    """Check that every word in the response is enclosed within square brackets."""
+
+    def build_description(self):
+        self._description_pattern = (
+            "Enclose every word in your response within square brackets."
+        )
+        return self._description_pattern
+
+    def get_instruction_args(self):
+        return None
+
+    def get_instruction_args_keys(self):
+        return []
+
+    def check_following(self, value):
+        # Find all tokens that look like words (not already in brackets)
+        # Check that every word-like token is inside [...]
+        # Strategy: find all words not inside brackets
+        # Remove all bracketed content
+        without_brackets = re.sub(r"\[[^\[\]]*\]", "", value)
+        # After removing bracketed content, there should be no standalone words left
+        remaining_words = re.findall(r"\b[a-zA-Z]+\b", without_brackets)
+        return len(remaining_words) == 0
+
+
+class SentenceHyphensChecker(Instruction):
+    """Check that all sentences are connected using hyphens with no spaces between them."""
+
+    def build_description(self):
+        self._description_pattern = (
+            "All sentences must be connected using hyphens, with no spaces between them."
+        )
+        return self._description_pattern
+
+    def get_instruction_args(self):
+        return None
+
+    def get_instruction_args_keys(self):
+        return []
+
+    def check_following(self, value):
+        value = value.strip()
+        # Check that the response contains hyphens connecting sentences
+        # and no spaces around hyphens used as sentence connectors
+        if not value:
+            return False
+        # The response should not contain ". " (sentence-ending space) patterns
+        # but should contain "-" connecting sentences
+        # Simple check: no spaces around sentence-connecting hyphens
+        # and the response uses hyphens as connectors
+        has_hyphen_connector = bool(re.search(r"\w-\w", value))
+        has_sentence_space = bool(re.search(r"[.!?]\s+[A-Z]", value))
+        return has_hyphen_connector and not has_sentence_space
+
+
+class CopyInstructionChecker(Instruction):
+    """Check that the instruction is copied verbatim without following it."""
+
+    def build_description(self, *, instruction_to_copy=None):
+        if not instruction_to_copy:
+            raise ValueError("instruction_to_copy must be set.")
+        self._instruction_to_copy = instruction_to_copy
+        self._description_pattern = (
+            "Copy this instruction verbatim, do not follow the instruction, "
+            "only copy it into the output (do not include this instruction sentence!)."
+        )
+        return self._description_pattern
+
+    def get_instruction_args(self):
+        return {"instruction_to_copy": self._instruction_to_copy}
+
+    def get_instruction_args_keys(self):
+        return ["instruction_to_copy"]
+
+    def check_following(self, value):
+        value = value.strip()
+        instruction = self._instruction_to_copy.strip()
+        return value.lower() == instruction.lower()
+
+
+class CopySpanIndexChecker(Instruction):
+    """Check that the span of words between character indices n_start and n_end is copied."""
+
+    def build_description(self, *, source_text=None, n_start=None, n_end=None):
+        if not source_text:
+            raise ValueError("source_text must be set.")
+        self._source_text = source_text
+        self._n_start = n_start if n_start is not None else 0
+        self._n_end = n_end if n_end is not None else min(len(source_text), 50)
+        self._expected_span = source_text[self._n_start:self._n_end + 1]
+        self._description_pattern = (
+            "Copy the span of words that lies between (and including) index {n_start} and {n_end}, "
+            "the indices are character indices!"
+        )
+        return self._description_pattern.format(n_start=self._n_start, n_end=self._n_end)
+
+    def get_instruction_args(self):
+        return {
+            "source_text": self._source_text,
+            "n_start": self._n_start,
+            "n_end": self._n_end,
+        }
+
+    def get_instruction_args_keys(self):
+        return ["source_text", "n_start", "n_end"]
+
+    def check_following(self, value):
+        return self._expected_span.strip() in value

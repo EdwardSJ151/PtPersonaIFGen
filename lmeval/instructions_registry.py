@@ -71,6 +71,35 @@ INSTRUCTION_DICT = {
     _CHANGE_CASES + "english_lowercase": instructions.LowercaseLettersEnglishChecker,
     _PUNCTUATION + "no_comma": instructions.CommaChecker,
     _STARTEND + "quotation": instructions.QuotationChecker,
+    # --- IFTrain out-of-distribution constraints ---
+    _KEYWORD + "word_once": instructions.KeywordOnceChecker,
+    _KEYWORD + "word_count_diff_numb": instructions.KeywordExactCountChecker,
+    _KEYWORD + "exclude_word_harder": instructions.ExcludeWordHarderChecker,
+    _KEYWORD + "letter_counting2": instructions.LetterExactCountChecker,
+    _LENGTH + "paragraphs_two_line_breaks": instructions.ParagraphsTwoLineBreaksChecker,
+    _STARTEND + "first_word_sent": instructions.FirstWordSentenceChecker,
+    _STARTEND + "first_word_answer": instructions.FirstWordAnswerChecker,
+    _STARTEND + "last_word_sent": instructions.LastWordSentenceChecker,
+    _STARTEND + "last_word_answer": instructions.LastWordAnswerChecker,
+    _FORMAT + "bigram_wrapping": instructions.BigramWrappingChecker,
+    _COMBINATION + "copying_simple": instructions.CopyingSimpleChecker,
+    _COMBINATION + "copying_multiple": instructions.CopyingMultipleChecker,
+    _PUNCTUATION + "no_dot": instructions.NoDotChecker,
+    _PUNCTUATION + "no_exclamation": instructions.NoExclamationChecker,
+    _KEYWORD + "lowercase_counting": instructions.LowercaseWordCountChecker,
+    _LENGTH + "letter_total_count": instructions.LetterTotalCountChecker,
+    _LENGTH + "counting_composition": instructions.CountingCompositionChecker,
+    _KEYWORD + "count_unique": instructions.UniqueWordsChecker,
+    _KEYWORD + "count_increment_word": instructions.IncrementKeywordChecker,
+    _KEYWORD + "palindrome": instructions.PalindromeChecker,
+    _KEYWORD + "keyword_specific_pos": instructions.KeywordSpecificPositionChecker,
+    _STARTEND + "start_end_same_word": instructions.StartEndSameWordChecker,
+    _COMBINATION + "repeat_phrase": instructions.RepeatPhraseChecker,
+    _KEYWORD + "no_adjacent_consecutive": instructions.NoAdjacentConsecutiveLettersChecker,
+    _FORMAT + "square_brackets_word": instructions.SquareBracketsWordChecker,
+    _FORMAT + "sentence_hyphens": instructions.SentenceHyphensChecker,
+    _COMBINATION + "copy_instruction": instructions.CopyInstructionChecker,
+    _COMBINATION + "copy_span_idx": instructions.CopySpanIndexChecker,
 }
 
 INSTRUCTION_CONFLICTS = {
@@ -96,11 +125,14 @@ INSTRUCTION_CONFLICTS = {
         _LENGTH + "nth_paragraph_first_word",
         _LENGTH + "number_sentences",
         _LENGTH + "nth_paragraph_first_word",
+        _LENGTH + "paragraphs_two_line_breaks",
+        _LENGTH + "counting_composition",
     },
     _LENGTH + "number_words": {_LENGTH + "number_words"},
     _LENGTH + "nth_paragraph_first_word": {
         _LENGTH + "nth_paragraph_first_word",
         _LENGTH + "number_paragraphs",
+        _LENGTH + "paragraphs_two_line_breaks",
     },
     _CONTENT + "number_placeholders": {_CONTENT + "number_placeholders"},
     _CONTENT + "postscript": {_CONTENT + "postscript"},
@@ -147,6 +179,79 @@ INSTRUCTION_CONFLICTS = {
     },
     _PUNCTUATION + "no_comma": {_PUNCTUATION + "no_comma"},
     _STARTEND + "quotation": {_STARTEND + "quotation", _FORMAT + "title"},
+    # --- IFTrain out-of-distribution constraints ---
+    _KEYWORD + "word_once": {_KEYWORD + "word_once"},
+    _KEYWORD + "word_count_diff_numb": {_KEYWORD + "word_count_diff_numb"},
+    _KEYWORD + "exclude_word_harder": {_KEYWORD + "exclude_word_harder"},
+    _KEYWORD + "letter_counting2": {_KEYWORD + "letter_counting2", _KEYWORD + "letter_frequency"},
+    _LENGTH + "paragraphs_two_line_breaks": {
+        _LENGTH + "paragraphs_two_line_breaks",
+        _LENGTH + "number_paragraphs",
+        _LENGTH + "nth_paragraph_first_word",
+        _LENGTH + "counting_composition",
+    },
+    _STARTEND + "first_word_sent": {
+        _STARTEND + "first_word_sent",
+        _STARTEND + "first_word_answer",
+    },
+    _STARTEND + "first_word_answer": {
+        _STARTEND + "first_word_answer",
+        _STARTEND + "first_word_sent",
+    },
+    _STARTEND + "last_word_sent": {
+        _STARTEND + "last_word_sent",
+        _STARTEND + "last_word_answer",
+        _STARTEND + "start_end_same_word",
+    },
+    _STARTEND + "last_word_answer": {
+        _STARTEND + "last_word_answer",
+        _STARTEND + "last_word_sent",
+        _STARTEND + "start_end_same_word",
+    },
+    _FORMAT + "bigram_wrapping": {_FORMAT + "bigram_wrapping"},
+    _COMBINATION + "copying_simple": set(INSTRUCTION_DICT.keys()).difference(
+        {_COMBINATION + "copying_simple"}
+    ),
+    _COMBINATION + "copying_multiple": set(INSTRUCTION_DICT.keys()).difference(
+        {_COMBINATION + "copying_multiple"}
+    ),
+    _PUNCTUATION + "no_dot": {
+        _PUNCTUATION + "no_dot",
+        _LENGTH + "number_sentences",
+        _LENGTH + "counting_composition",
+    },
+    _PUNCTUATION + "no_exclamation": {_PUNCTUATION + "no_exclamation"},
+    _KEYWORD + "lowercase_counting": {_KEYWORD + "lowercase_counting"},
+    _LENGTH + "letter_total_count": {_LENGTH + "letter_total_count"},
+    _LENGTH + "counting_composition": {
+        _LENGTH + "counting_composition",
+        _LENGTH + "number_paragraphs",
+        _LENGTH + "paragraphs_two_line_breaks",
+        _LENGTH + "number_sentences",
+        _PUNCTUATION + "no_dot",
+    },
+    _KEYWORD + "count_unique": {_KEYWORD + "count_unique"},
+    _KEYWORD + "count_increment_word": {_KEYWORD + "count_increment_word"},
+    _KEYWORD + "palindrome": {_KEYWORD + "palindrome"},
+    _KEYWORD + "keyword_specific_pos": {_KEYWORD + "keyword_specific_pos"},
+    _STARTEND + "start_end_same_word": {
+        _STARTEND + "start_end_same_word",
+        _STARTEND + "last_word_sent",
+        _STARTEND + "last_word_answer",
+    },
+    _COMBINATION + "repeat_phrase": {_COMBINATION + "repeat_phrase"},
+    _KEYWORD + "no_adjacent_consecutive": {_KEYWORD + "no_adjacent_consecutive"},
+    _FORMAT + "square_brackets_word": {
+        _FORMAT + "square_brackets_word",
+        _CONTENT + "number_placeholders",
+    },
+    _FORMAT + "sentence_hyphens": {_FORMAT + "sentence_hyphens"},
+    _COMBINATION + "copy_instruction": set(INSTRUCTION_DICT.keys()).difference(
+        {_COMBINATION + "copy_instruction"}
+    ),
+    _COMBINATION + "copy_span_idx": set(INSTRUCTION_DICT.keys()).difference(
+        {_COMBINATION + "copy_span_idx"}
+    ),
 }
 
 

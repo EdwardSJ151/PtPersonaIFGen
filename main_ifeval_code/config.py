@@ -136,6 +136,34 @@ IFEVAL_CONSTRAINT_PHRASINGS = """
 - "Em toda a sua resposta, evite o uso de vírgulas."
 - "Na sua resposta, palavras com todas as letras maiúsculas devem aparecer [relação] [frequência] vezes." ([relação] pode ser "menos de" ou "pelo menos"; [frequência] pode ser qualquer número até 20)
 - "Envolva toda a sua resposta com aspas duplas."
+- "Inclua a palavra-chave [palavra_chave] na sua resposta." ([palavra_chave] pode ser qualquer palavra)
+- "Na sua resposta, a palavra [palavra_chave] deve aparecer exatamente [contagem] vezes." ([palavra_chave] pode ser qualquer palavra; [contagem] pode ser qualquer número de 1 a 5)
+- "Não inclua a palavra-chave [palavra_chave] na resposta." ([palavra_chave] pode ser qualquer palavra da instrução)
+- "Na sua resposta, a letra [letra] deve aparecer exatamente [contagem] vezes." ([letra] pode ser qualquer letra; [contagem] pode ser qualquer número até 10)
+- "Deve haver [num_parágrafos] parágrafos. Os parágrafos são separados entre si por duas quebras de linha."
+- "A primeira palavra de cada frase deve ser a palavra [primeira_palavra]." ([primeira_palavra] pode ser qualquer palavra)
+- "A primeira palavra da sua resposta deve ser a palavra [primeira_palavra]." ([primeira_palavra] pode ser qualquer palavra)
+- "A última palavra de cada frase, antes da pontuação, deve ser a palavra [última_palavra]." ([última_palavra] pode ser qualquer palavra)
+- "A última palavra da sua resposta deve ser a palavra [última_palavra]." ([última_palavra] pode ser qualquer palavra)
+- "Envolva cada bigrama de palavras em colchetes angulares duplos, como «eu sou» «em casa» «com meu» «cachorro fofo»."
+- "Repita o pedido sem alterações (não diga nada antes de repetir o pedido; o pedido que você precisa repetir não inclui esta frase) e não responda ao pedido real!"
+- "Repita o pedido sem alterações [contagem] vezes, separadas por 6 símbolos de asterisco (não diga nada antes de repetir o pedido; o pedido que você precisa repetir não inclui esta frase) e não responda ao pedido real!" ([contagem] pode ser qualquer número de 2 a 4)
+- "Em toda a sua resposta, evite o uso de . (ou seja, pontos) como pontuação e em geral."
+- "Em toda a sua resposta, evite o uso de ! (ou seja, pontos de exclamação) como pontuação e em geral."
+- "Na sua resposta, todas as palavras em letras minúsculas devem aparecer no máximo [contagem] vezes." ([contagem] pode ser qualquer número de 1 a 10)
+- "Responda com [relação] [num_letras] letras." ([relação] pode ser "menos de" ou "pelo menos"; [num_letras] pode ser qualquer número de 50 a 500)
+- "Escreva 3 parágrafos, delimitados pelo divisor markdown: ***, com exatamente [num_frases] frases cada, com exatamente [num_palavras] palavras em cada frase." ([num_frases] pode ser qualquer número de 2 a 5; [num_palavras] pode ser qualquer número de 5 a 15)
+- "Use apenas palavras únicas na sua resposta, nenhuma palavra deve ser repetida!"
+- "Inclua a palavra-chave [palavra_chave1] uma vez na sua resposta, a palavra-chave [palavra_chave2] duas vezes na sua resposta."
+- "Inclua um palíndromo na sua resposta."
+- "Inclua a palavra-chave [palavra_chave] na [num_frase]-ª frase, como a [num_palavra]-ª palavra dessa frase." ([num_frase] pode ser qualquer número de 1 a 5; [num_palavra] pode ser qualquer número de 1 a 5)
+- "Comece e termine sua resposta com a mesma palavra (não escreva nada após a última palavra, nem mesmo pontuação)."
+- "Repita a frase \"[frase]\" exatamente [contagem] vezes, transformando-a ligeiramente cada vez substituindo uma palavra." ([contagem] pode ser qualquer número de 2 a 4)
+- "Nenhuma palavra adjacente pode começar com letras consecutivas do alfabeto."
+- "Envolva cada palavra da sua resposta entre colchetes."
+- "Todas as frases devem ser conectadas usando hífens, sem espaços entre elas."
+- "Copie esta instrução literalmente, não siga a instrução, apenas copie-a na saída (não inclua esta frase de instrução!)."
+- "Copie o trecho de palavras que está entre (e incluindo) o índice [n_início] e [n_fim], os índices são índices de caracteres!" ([n_início] e [n_fim] podem ser qualquer número inteiro não negativo)
 """.strip()
 
 
