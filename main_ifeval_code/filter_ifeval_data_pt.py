@@ -2,7 +2,7 @@ import json
 from typing import TYPE_CHECKING
 
 from datasets import load_dataset
-from lmeval.utils import process_results
+from lmeval_pt.utils import process_results
 
 if TYPE_CHECKING:
     from datasets import Dataset

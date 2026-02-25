@@ -1,7 +1,7 @@
 import dataclasses
 from typing import Dict, Optional, Union
 
-from lmeval import instructions_registry
+from lmeval_pt import instructions_registry
 
 
 @dataclasses.dataclass

@@ -14,7 +14,7 @@
 
 """Registry of all instructions."""
 
-from lmeval import instructions
+from lmeval_pt import instructions
 
 
 _KEYWORD = "keywords:"
