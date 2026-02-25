@@ -14,7 +14,7 @@
 
 """Registry of all instructions."""
 
-from ifeval_persona.lmeval import instructions
+from lmeval import instructions
 
 
 _KEYWORD = "keywords:"

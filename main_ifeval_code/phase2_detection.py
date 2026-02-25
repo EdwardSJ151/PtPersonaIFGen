@@ -23,7 +23,7 @@ from typing import Optional
 from openai import AsyncOpenAI
 from tqdm import tqdm
 
-from ifeval_persona.main_ifeval_code.config import (
+from main_ifeval_code.config import (
     VLLM_BASE_URL,
     VLLM_API_KEY,
     IFEVAL_INSTRUCTION_ID_LIST_ASSIGNATOR_SYSTEM_PROMPT,
@@ -34,7 +34,7 @@ from ifeval_persona.main_ifeval_code.config import (
     PHASE1_OUTPUT,
     PHASE2_OUTPUT,
 )
-from ifeval_persona.main_ifeval_code.utils import (
+from main_ifeval_code.utils import (
     get_last_processed_id,
     iter_jsonl_batches,
     write_jsonl_batch,

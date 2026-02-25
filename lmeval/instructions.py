@@ -24,7 +24,7 @@ from typing import Dict, Optional, Sequence, Union
 
 import langdetect
 
-from ifeval_persona.lmeval import instructions_util
+from lmeval import instructions_util
 
 
 logger = logging.getLogger(__name__)

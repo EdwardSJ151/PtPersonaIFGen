@@ -28,7 +28,7 @@ import asyncio
 import os
 import sys
 
-from ifeval_persona.main_ifeval_code.config import (
+from main_ifeval_code.config import (
     DEFAULT_BATCH_SIZE,
     DEFAULT_NUM_ROWS,
     PHASE1_OUTPUT,
@@ -44,7 +44,7 @@ async def run_phase1(num_rows: int, batch_size: int, output: str):
     print("PHASE 1: Magpie Instruction + Response Generation")
     print("=" * 60)
     
-    from ifeval_persona.main_ifeval_code.phase1_magpie import main as phase1_main
+    from main_ifeval_code.phase1_magpie import main as phase1_main
     await phase1_main(
         output_file=output,
         num_rows=num_rows,
@@ -58,7 +58,7 @@ async def run_phase2(input_file: str, batch_size: int, output: str):
     print("PHASE 2: Constraint Type Detection")
     print("=" * 60)
     
-    from ifeval_persona.main_ifeval_code.phase2_detection import main as phase2_main
+    from main_ifeval_code.phase2_detection import main as phase2_main
     await phase2_main(
         input_file=input_file,
         output_file=output,
@@ -72,7 +72,7 @@ async def run_phase3(input_file: str, batch_size: int, output: str):
     print("PHASE 3: Parameter Extraction")
     print("=" * 60)
     
-    from ifeval_persona.main_ifeval_code.phase3_extraction import main as phase3_main
+    from main_ifeval_code.phase3_extraction import main as phase3_main
     await phase3_main(
         input_file=input_file,
         output_file=output,
@@ -86,7 +86,7 @@ def run_phase4(input_file: str, batch_size: int, output: str):
     print("PHASE 4: Post-Processing")
     print("=" * 60)
     
-    from ifeval_persona.main_ifeval_code.phase4_postprocess import main as phase4_main
+    from main_ifeval_code.phase4_postprocess import main as phase4_main
     phase4_main(
         input_file=input_file,
         output_file=output,

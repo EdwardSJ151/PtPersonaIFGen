@@ -5,12 +5,12 @@ Referencia pipeline/system_prompts_pt.py e pipeline/json_schemas_pt.py
 
 import os
 
-from ifeval_persona.main_ifeval_code.system_prompts_pt import (
+from main_ifeval_code.system_prompts_pt import (
     IFEVAL_SYSTEM_PROMPT,
     IFEVAL_INSTRUCTION_ID_LIST_ASSIGNATOR_SYSTEM_PROMPT,
     IFEVAL_KWARGS_ASSIGNATOR_SYSTEM_PROMPT,
 )
-from ifeval_persona.main_ifeval_code.json_schemas_pt import (
+from main_ifeval_code.json_schemas_pt import (
     IFEVAL_INSTRUCTION_ID_LIST_JSON_SCHEMA,
     IFEVAL_RESPONSE_VERIFICATION_FUNCTION_ARGUMENTS_JSON_SCHEMA,
 )

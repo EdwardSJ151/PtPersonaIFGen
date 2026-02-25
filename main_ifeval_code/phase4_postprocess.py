@@ -23,7 +23,7 @@ import json
 
 from tqdm import tqdm
 
-from ifeval_persona.main_ifeval_code.filter_ifeval_data_pt import (
+from main_ifeval_code.filter_ifeval_data_pt import (
     INSTRUCTION_ARGS,
     LANGUAGE_TO_CODE,
     IFEVAL_INSTRUCTION_CONFLICTS,
@@ -32,11 +32,11 @@ from ifeval_persona.main_ifeval_code.filter_ifeval_data_pt import (
     get_ifeval_results,
 )
 
-from ifeval_persona.main_ifeval_code.config import (
+from main_ifeval_code.config import (
     PHASE3_OUTPUT,
     PHASE4_OUTPUT,
 )
-from ifeval_persona.main_ifeval_code.utils import (
+from main_ifeval_code.utils import (
     iter_jsonl_batches,
     write_jsonl_line,
     count_jsonl_lines,
