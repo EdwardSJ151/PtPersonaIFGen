@@ -1,2 +1,6 @@
 .env
 previous_things/
+__pycache__/
+*.jsonl
+*.json
+*.txt
